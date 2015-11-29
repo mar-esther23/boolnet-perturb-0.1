@@ -1,20 +1,19 @@
 # Robustness and Plasticity in Regulatory Networks
 
-* [Introduction](./RPRN-Introduction.ipynb)
-
-* [BoolNet](./RPRN-BoolNet.ipynb)
-    * Construction (and simplification)
+* Introduction
+* BoolNet
+    * Construction
     * Attractors
     * Labeling
-* [Functions](./RPRN-Functions.ipynb)
+* Functions
     * Truth table perturbations
     * Overexpression and Knock-Outs
     * Environment
-* [Updating](./RPRN-Updating.ipynb)
+* Updating
     * Synchronous vs asynchronous
-* [States](./RPRN-States.ipynb)
+* States
     * Transient perturbations
     * Stochastic noise
-* [Appendix](./RPRN-Appendix.ipynb)
+* Appendix
     * Simulation and model checking
     * Importing and exporting with SBML
