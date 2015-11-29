@@ -8,6 +8,18 @@ dec2binState <- function(x, genes){
     state
 }
 
+attractor2dataframe <- function(attr) {
+    # Convert an BoolNet attractor object to a data frame.
+    # states will be converted to strings and collapsed using '/'
+    data.frame(
+        involvedStates = sapply(attr$attractors, function(a) {
+            paste(as.character(a$involvedStates), collapse='/')
+        })  , 
+        basinSize = sapply(attr$attractors, function(a) a$basinSize )
+    )}
+
+
+
 ######################
 ####   LABELING   ####
 ######################
@@ -42,3 +54,7 @@ labelAttractors <- function(attr, node.names, labels, rules) {
     }
     res
 }
+
+
+
+
