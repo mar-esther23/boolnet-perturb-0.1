@@ -8,15 +8,55 @@ dec2binState <- function(x, genes){
     state
 }
 
+
+
 attractor2dataframe <- function(attr) {
-    # Convert an BoolNet attractor object to a data frame.
-    # states will be converted to strings and collapsed using '/'
-    data.frame(
-        involvedStates = sapply(attr$attractors, function(a) {
-            paste(as.character(a$involvedStates), collapse='/')
-        })  , 
-        basinSize = sapply(attr$attractors, function(a) a$basinSize )
-    )}
+    # Convert an BoolNet attractor object to a data frame of attr$attractor properties.
+    # attr$attractor properties with multiple elements will be transformed to strings and joined with "/"
+    
+    attr <- attr$attractors
+    # create properties list, if labeled we will have more
+    attr.properties <- vector("list", length(attr[[(1)]]))
+    names(attr.properties) <- names(attr[[(1)]])
+    attr.properties
+    
+    for (n in names(attr.properties) ) { #create list for each property
+        attr.properties[[n]] <- sapply(attr, function(a) a[[n]]) 
+        #verify number of elements inside list
+        ncol <- max(sapply(attr.properties[[n]], length))
+        if ( ncol > 1) { #collapse
+            attr.properties[[n]] <- sapply(attr.properties[[n]], function(a) {
+                paste(as.character(a), collapse='/')
+            })}    
+    }
+    data.frame(attr.properties)
+}
+
+
+
+attractorsListsToDataframe <- function(attr.list) {
+    # Receives a list of BoolNet attractors and return a dataframe
+    # Each column is named attrName.propertyName
+    
+    # Transform from attr to dataframe
+    attr.list <- lapply(attr.list, attractor2dataframe)
+    # set involvedStates as rowname, delete
+    # and rename df columns to attrName.propertyName
+    for (n in names(attr.list)) {
+        rownames(attr.list[[n]]) <- attr.list[[n]]$involvedStates #set involvedStates as rowname
+        attr.list[[n]]$involvedStates <- NULL #delete
+        names(attr.list[[n]]) <- paste(n, names(attr.list[[n]]), sep='.') # rename df columns
+    } 
+    
+    #merge and reduce by rownames
+    attr.df <- Reduce(function(x, y){
+        df <- merge(x, y, by= "row.names", all=TRUE)
+        rownames(df) <- df$Row.names
+        df$Row.names <- NULL
+        return(df)
+    }, attr.list)
+    attr.df
+}
 
 
 
@@ -60,24 +100,14 @@ labelAttractors <- function(attr, node.names, labels, rules) {
 #######################
 ####   FIX NODES   ####
 #######################
-getStatesAndBasin <- function (attr) {
-    # Receives a set of attractors, 
-    # returns a list with int_state and basin
-    # if the basin value is NA returns TRUE
-    states <- sapply(attr$attractors, function(attractor) attractor$involvedStates )
-    basin <- sapply(attr$attractors, function(attractor) {
-        if (is.na(attractor$basinSize)) TRUE  #control for asynchronous
-        else attractor$basinSize  #basin size in synchronous
-    })
-    states <- list(states=states, basin=basin)
-    #names(states) = states
-    states
-}
-
 getFixedAttractors <- function(net, genes, value, label, type="synchronous", returnDataFrame=TRUE) {
-    #     Simulates knocked-out or over-expression for all  genes
-    #     by fixing the values of genes to 0 or 1, 
-    #     Returns all the possible attractors with basin if posible
+    # Takes a net and fixes the genes with value, returns attractors
+    # net:      network
+    # genes:    list of genes to fix
+    # values:   list of values to fix genes
+    # label:    names of fixed networks
+    # type:     update type, if async the basins are T of F
+    # returnDataFrame: datatype to return, if true dataframe, if false list of attractors
     
     # generate genes to evaluate
     if (missing(genes) | missing(value)) { #Default, evaluate all single KOver
@@ -94,45 +124,14 @@ getFixedAttractors <- function(net, genes, value, label, type="synchronous", ret
     for (i in 1:length(genes)) {
         #print(paste(i, label[i], genes[i], value[i]  ))
         if (!is.na(genes[i])) { net <- fixGenes(net, unlist(genes[i]), unlist(value[i])) }
-        attr <- getAttractors(net, type=type)
-        states <- getStatesAndBasin(attr)
-        mutants[[i]] <- states
+        mutants[[i]] <- getAttractors(net, type=type)
         if (! is.na(unlist(genes[i]))) net <- fixGenes(net, unlist(genes[i]), -1)
     }
-    # convert to dataframe
     names(mutants) <- label
-    if (returnDataFrame==TRUE) mutants <- fixedAttractorsListsToDataframe(mutants)
+    # convert attractors to dataframe
+    if (returnDataFrame==TRUE) mutants <- attractorsListsToDataframe(mutants)
     mutants
 }
 
-fixedAttractorsListsToDataframe <- function(attrList) {
-    # Receives a list of lists
-    # Each list corresponds to a network (with != fixed genes)
-    # Each list contains lists $states and $basin
-    # $states can cointain cyclic attractors
-    # Return a dataframe
-    
-    # Convert cycles to str
-    for (i in 1:length(attrList)) {
-        for (j in 1:length(attrList[[i]][[1]])) {
-            s <- attrList[[i]][[1]][[j]]
-            if (length(s) > 1) { s <- paste( s, collapse='-') }
-            attrList[[i]][[1]][[j]] <- s }
-        attrList[[i]][[1]] <- unlist(attrList[[i]][[1]])
-    }
-    
-    # Determine dataframe dimensions
-    states <- sapply(attrList, function(attr) attr$states)
-    states <- sort(unique(unlist(states)))
-    df <- data.frame(attr=states, row.names=states, stringsAsFactors = FALSE)
-    
-    #merge
-    for (name in names(attrList)) {
-        attr <- data.frame(attrList[[name]], row.names=attrList[[name]]$states, stringsAsFactors = FALSE)
-        names(attr) <- c('attr', name)
-        df <- merge(df, attr, all=TRUE)
-    }
-    df$attr <- as.character(df$attr)
-    row.names <- as.character(df$attr)
-    df
-}
+
+
