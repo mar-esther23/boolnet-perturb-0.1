@@ -44,7 +44,7 @@ attractor2dataframe <- function(attr) {
                 paste(as.character(a), collapse='/')
             })}    
     }
-    data.frame(attr.properties)
+    data.frame(attr.properties, stringsAsFactors=FALSE)
 }
 
 
