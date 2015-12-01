@@ -10,6 +10,21 @@ dec2binState <- function(x, genes){
 
 
 
+isGeneInput <- function(gene, net) {
+    if ( 
+        all((which( net$genes == gene )) == net$interactions[[gene]]$input)
+        && 
+            all(c(0,1) == net$interactions[[gene]]$func)
+    ) { return(TRUE) } else return(FALSE)
+}
+
+setStateValues <- function(state, new.nodes, new.values) {
+    for (i in 1:length(new.nodes)) { state[new.nodes[i]] <- new.values[i] }
+    state
+}
+
+
+
 attractor2dataframe <- function(attr) {
     # Convert an BoolNet attractor object to a data frame of attr$attractor properties.
     # attr$attractor properties with multiple elements will be transformed to strings and joined with "/"
@@ -97,10 +112,10 @@ labelAttractors <- function(attr, node.names, labels, rules) {
 
 
 
-#######################
-####   FIX NODES   ####
-#######################
-getFixedAttractors <- function(net, genes, value, label, type="synchronous", returnDataFrame=TRUE) {
+#############################
+####   PERTURB NETWORK   ####
+#############################
+perturbNetworkFixedNodes <- function(net, genes, value, label, type="synchronous", returnDataFrame=TRUE) {
     # Takes a net and fixes the genes with value, returns attractors
     # net:      network
     # genes:    list of genes to fix
@@ -122,16 +137,81 @@ getFixedAttractors <- function(net, genes, value, label, type="synchronous", ret
     # Calculate mutants
     mutants <- list()
     for (i in 1:length(genes)) {
-        #print(paste(i, label[i], genes[i], value[i]  ))
-        if (!is.na(genes[i])) { net <- fixGenes(net, unlist(genes[i]), unlist(value[i])) }
+#         print(i)
+#         print(label[i])
+#         print(genes[i])
+#         print(value[i] )
+        not.WT <- ! (is.null(genes[i]) || is.na(genes[i]))
+#         print(not.WT)
+        if ( not.WT ) { net <- fixGenes(net, unlist(genes[i]), unlist(value[i])) }
         mutants[[i]] <- getAttractors(net, type=type)
-        if (! is.na(unlist(genes[i]))) net <- fixGenes(net, unlist(genes[i]), -1)
+        if ( not.WT ) net <- fixGenes(net, unlist(genes[i]), -1)
     }
     names(mutants) <- label
     # convert attractors to dataframe
     if (returnDataFrame==TRUE) mutants <- attractorsListsToDataframe(mutants)
     mutants
 }
+
+
+
+##########################
+####   PERTURB PATH   ####
+##########################
+perturbPathToAttractor <- function(state, net, genes, values, time=NULL, returnTable = FALSE) {
+    # Documentation
+    # Takes an initial state and a perturbation, returns the final attractor or trajectory
+    # Perturbations are nodes and values
+    # Perturbations can be fixed or for a certain time
+    
+    initial.state <- state #add conversion later
+    names(initial.state) <- net$genes
+    if (returnTable) path.perturbed <- list(initial.state) #save initial state in path
+    
+    if (!is.null(time)) { # if transient perturbation
+        # determine original value of inputs
+        inputs <- unlist(sapply(net$genes, function(g) {
+            if (isGeneInput(g,net)) return(T) else F
+        }))
+        inputs.values <- state[inputs]
+        inputs <- names(inputs.values)
+        
+        # apply perturbation
+        net <- fixGenes(net, genes, values) 
+        
+        for (t in 1:time) { #iterate n times
+            initial.state <- stateTransition(net, initial.state)
+            if (returnTable) path.perturbed <- append(path.perturbed, list(initial.state))
+        }
+        # recover original network and inputs
+        net <- fixGenes(net, genes, -1) 
+        initial.state <- setStateValues(initial.state, inputs, inputs.values) 
+    } else { # if fixed perturbation
+        # apply perturbation
+        net <- fixGenes(net, genes, values) 
+        # change the values according to perturbation
+        initial.state <- setStateValues(state, genes, values)
+        #if (returnTable) path.perturbed <- append(path.perturbed, list(initial.state))
+    }
+    
+    if (!returnTable) { #just return the attractor
+        attr <- getAttractors(net, startStates = list(initial.state), returnTable=F)
+        return(attr)
+    }
+    
+    # calculate the rest of the trajectory
+    path <- getPathToAttractor(net, initial.state)
+    
+    #if (is.null(time)) return(path)  # if fixed perturbation and trajectory
+    
+    # join both paths
+    path.perturbed <- sapply(path.perturbed, function(f) f) # simplify path.perturbed
+    path <- t(path)
+    path.res <- t(cbind(path.perturbed, path)) #join lists
+    rownames(path.res) <- c(1:(dim(path.res)[1]))
+    return(path.res)
+}
+
 
 
 
