@@ -2,7 +2,7 @@
 
 The BoolNetPerturb package adds functions to BoolNet for perturbing Boolean Regulatory Networks. This functions can be used for the study of biological systems. This package is capable of labeling states, simulating multiple knock-outs and over-expressions and simulating fixed and transient perturbations in the states and trajectory of a network. See the Jupyter Tutorials for more examples.
 
-## Instalation
+## Installation
 Using [devtools](https://github.com/hadley/devtools) in R:
 ```
 install.packages("devtools")
@@ -36,13 +36,13 @@ For running the tutorials you need [Jupyter](http://jupyter.readthedocs.org/en/l
     * Robustness in biological systems
     * Boolean regulatory networks
     * Biological system: Th17/iTreg network
-    * BoolNet and BoolNetPerturb instalation
+    * BoolNet and BoolNetPerturb installation
 * [BoolNet](./RPRN-BoolNet.ipynb)
     * Construction
     * Attractors
     * Labeling
 * [Functions](./RPRN-Functions.ipynb)
-    * Overexpression and KnockOuts
+    * Over-expression and knock-outs
     * Fixed environments
     * Truth tables
 * [Updating](./RPRN-Updating.ipynb)
@@ -53,5 +53,4 @@ For running the tutorials you need [Jupyter](http://jupyter.readthedocs.org/en/l
     * Stochastic noise
 * [Appendix](./RPRN-Appendix.ipynb)
     * Simulation and model checking
-    * Importing and exporting with SBML
-
+    * Importing and exporting with SBML-qual
