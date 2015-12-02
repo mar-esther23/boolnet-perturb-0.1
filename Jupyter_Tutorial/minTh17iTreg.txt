@@ -1,3 +1,6 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+
 targets, functions
 IL2, (IL2e | (IL2 &  ! FOXP3)) &  ! (STAT3 | (IL10 & ! FOXP3))
 RORGT, (STAT3 & TGFB) &  ! FOXP3

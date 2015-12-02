@@ -178,10 +178,11 @@ perturbPathToAttractor <- function(state, net, genes, values, time=NULL, returnT
         
         # apply perturbation
         net <- fixGenes(net, genes, values) 
+        initial.state <- setStateValues(state, genes, values)
         
         for (t in 1:time) { #iterate n times
-            initial.state <- stateTransition(net, initial.state)
             if (returnTable) path.perturbed <- append(path.perturbed, list(initial.state))
+            initial.state <- stateTransition(net, initial.state)
         }
         # recover original network and inputs
         net <- fixGenes(net, genes, -1) 
