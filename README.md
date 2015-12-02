@@ -11,15 +11,21 @@ install_github("mar-esther23/boolnet-perturb")
 ```
 
 Download from github:
+
 1. Download the `.zip` from [github](https://github.com/mar-esther23/boolnet-perturb). 
+
 2. Unzip the file
+
 3. In `R`:
 ```
 install("path/to/BoolNetPerturb")
 ```
 
+
 The ugly option (not recommended):
+
 1. Download the [functions code](https://github.com/mar-esther23/boolnet-perturb/blob/master/BoolNetPerturb/R/BoolNetPerturb.R).
+
 2. In `R`:
 ```
 source("path/to/BoolNetPerturb.R")
