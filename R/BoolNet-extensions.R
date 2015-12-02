@@ -1,15 +1,34 @@
+library(BoolNet)
 
 
-dec2binState <- function(x, genes){ 
-    # Takes an integer and a list of node names
-    # Returns a vector of 0s and 1s where the name of elemento corresponds to a named node
-    state <- as.integer( intToBits(x)[1:length(genes)] )  
-    names(state) <- genes
+#' Convert integer to binary state vector with node names.
+#'
+#' @param x input integer representing the state
+#' @param genes network node names
+#' @return Numeric binary vector of the same length as the nuber of nodes. Each 
+#'     position corresponds to a node of the network. The values of each element 
+#'     are 0 or 1. The name of each element corresponds to the name of the node in
+#'     that position in the network.
+#' @seealso \code{\link{intToBits}} which this function wraps
+#' @export
+#' @examples
+#' dec2binState(0, net$genes)
+dec2binState <- function(x, nodes){ 
+    state <- as.integer( intToBits(x)[1:length(nodes)] )  
+    names(state) <- nodes
     state
 }
 
 
 
+#' Determines if a node is an input in the network.
+#'
+#' @param gene node to asses
+#' @param net BoolNet network 
+#' @return Boolean is the node an input in the network.
+#' @export
+#' @examples
+#' isGeneInput("cycd", cellcycle)
 isGeneInput <- function(gene, net) {
     if ( 
         all((which( net$genes == gene )) == net$interactions[[gene]]$input)
@@ -18,6 +37,18 @@ isGeneInput <- function(gene, net) {
     ) { return(TRUE) } else return(FALSE)
 }
 
+
+
+#' Set a new value to certain nodes in a state.
+#'
+#' @param state original state
+#' @param new.nodes nodes to modify
+#' @param new.values new values of modified nodes
+#' @return State with new values in modified nodes.
+#' @export
+#' @examples
+#' state <- dec2binState(0, cellcycle$genes)
+#' new.state <- setStateValues(state, c("cycd","cyce"), c(0,1))
 setStateValues <- function(state, new.nodes, new.values) {
     for (i in 1:length(new.nodes)) { state[new.nodes[i]] <- new.values[i] }
     state
@@ -25,10 +56,26 @@ setStateValues <- function(state, new.nodes, new.values) {
 
 
 
-attractor2dataframe <- function(attr) {
-    # Convert an BoolNet attractor object to a data frame of attr$attractor properties.
-    # attr$attractor properties with multiple elements will be transformed to strings and joined with "/"
-    
+####################
+#### DATAFRAMES ####
+####################
+
+#' Convert an BoolNet attractor object to a data frame.
+#' Each property of attr$attractors corresponds to a dataframe column.
+#' If the propertie has elements with length > 1 it converts them to a string
+#' and joins them with sep.
+#'
+#' @param attr BoolNet attractor object
+#' @param sep string to join elements with length > 1, default "/"
+#' @return Dataframe, each column corresponds to a property of the attractor
+#' @export
+#' @examples
+#' > attr <- getAttractors(cellcycle$genes)
+#' > attractor2dataframe(attr)
+#'               involvedStates basinSize
+#' 1                        162       512
+#' 2 25/785/849/449/389/141/157       512
+attractor2dataframe <- function(attr, sep="/") {
     attr <- attr$attractors
     # create properties list, if labeled we will have more
     attr.properties <- vector("list", length(attr[[(1)]]))
@@ -41,7 +88,7 @@ attractor2dataframe <- function(attr) {
         ncol <- max(sapply(attr.properties[[n]], length))
         if ( ncol > 1) { #collapse
             attr.properties[[n]] <- sapply(attr.properties[[n]], function(a) {
-                paste(as.character(a), collapse='/')
+                paste(as.character(a), collapse=sep)
             })}    
     }
     data.frame(attr.properties, stringsAsFactors=FALSE)
@@ -49,12 +96,25 @@ attractor2dataframe <- function(attr) {
 
 
 
-attractorsListsToDataframe <- function(attr.list) {
+#' Convert a list of BoolNet attractor objects to a data frame.
+#' Each property of eacn attr$attractors corresponds to a dataframe column. Columns are named attrName.propertyName, if the list has no names numbers will be used.
+#' If the propertie has elements with length > 1 it converts them to a string
+#' and joins them with sep.
+#'
+#' @param attr.list list of BoolNet attractor objects
+#' @param sep string to join elements with length > 1, default "/"
+#' @return Dataframe, each column corresponds to a property of the attractor
+#' @export
+#' @examples
+#' attractorsLists2Dataframe(attr.list)
+attractorsLists2Dataframe <- function(attr.list, sep='/') {
     # Receives a list of BoolNet attractors and return a dataframe
     # Each column is named attrName.propertyName
     
     # Transform from attr to dataframe
-    attr.list <- lapply(attr.list, attractor2dataframe)
+    attr.list <- lapply(attr.list, attractor2dataframe, sep)
+    # Verify names exist
+    if ( is.null(names(attr.list)) ) names(attr.list) <- 1:length(attr.list)
     # set involvedStates as rowname, delete
     # and rename df columns to attrName.propertyName
     for (n in names(attr.list)) {
@@ -78,9 +138,22 @@ attractorsListsToDataframe <- function(attr.list) {
 ######################
 ####   LABELING   ####
 ######################
-labelState <- function(state, node.names, labels, rules) {
-    # label a single binary state
-    # returns a label string
+
+#' Labels a binary state using a set of labelling rules.
+#' The elements of the state correspond the network node names.
+#' If a rule is satisfied the corresponding label is appended.
+#'
+#' @param state binary state to label
+#' @param node.names node names of the state, the length must be the same that the state's
+#' @param labels label that will be appended if the corresponding rule is TRUE
+#' @param rules rules used for labelling the state. If the state satisfies the rule the corresponing label will be appended.  All the node names present in the rules must be in node.names
+#' @param sep string to separate the labels when more than one can be applied to the state.
+#' @return String corresponding to the label of the state.
+#' @export
+#' @examples
+#' state <- dec2binState(0, net$genes)
+#' labelState(state, net$genes, labels, rules, sep='')
+labelState <- function(state, node.names, labels, rules, sep='') {
     names(state) <- node.names
     label = c()
     for (j in 1:length(rules)) { #evaluate rules
@@ -92,10 +165,25 @@ labelState <- function(state, node.names, labels, rules) {
     }
     # format label
     if (is.null(label)) { label <-c('NoLabel')}
-    label <- paste(label, collapse='')
+    label <- paste(label, collapse=sep)
 }
 
-labelAttractors <- function(attr, node.names, labels, rules) {
+
+
+#' Labels a BoolNet attractor object using a set of labelling rules, returns a list of labels.
+#'
+#' @param attr Boolnet attractor object
+#' @param node.names node names of the network
+#' @param labels label that will be appended if the corresponding rule is TRUE
+#' @param rules rules used for labelling the state. If the state satisfies the rule the corresponing label will be appended.  All the node names present in the rules must be in node.names
+#' @param sep string to separate the labels when more than one can be applied to the state.
+#' @return List of strings corresponding to the label of the attractor, if an attractor has multiple states it will return a list of strings for that state.
+#' @seealso \code{\link{labelState}} which this function wraps
+#' @export
+#' @examples
+#' attr <- getAttractors(net$genes)
+#' labelAttractors(attr, net$genes, labels, rules, sep='')
+labelAttractors <- function(attr, node.names, labels, rules, sep='') {
     # takes an attractors object created by BoolNet
     # returns a list of the labels for each attractor in order.
     # If an attractor has multiple states it will return a label for each state.
@@ -103,7 +191,7 @@ labelAttractors <- function(attr, node.names, labels, rules) {
     for (i in 1:length(attr$attractors)) {
         label <- sapply(attr$attractors[[i]]$involvedStates, function(state) {
             state <- dec2binState(state, node.names) #state to binary
-            l <- labelState(state, node.names, labels, rules) #label
+            l <- labelState(state, node.names, labels, rules, sep='') #label
         })
         res <- append(res, list(label))
     }
@@ -115,15 +203,33 @@ labelAttractors <- function(attr, node.names, labels, rules) {
 #############################
 ####   PERTURB NETWORK   ####
 #############################
+#' Simulates fixed function perturbations (knock-out and over-expression) in a network. Takes a network, a list of gene names and corresponding values to perturb, fixes those values in each network and returns the corresponding attractors for all perturbed networks. By default it  returns all the single node knock-out and over-expression of a network.
+#'
+#' @param net network to perturb
+#' @param genes list of gene names to perturb. To perturb multiple nodes at the same time use a vector inside the list.
+#' @param value list of values of the perturbed genes. Knock-out is 0, over-expression is 1.
+#' @param label name of the perturbation
+#' @param type update type, can be "synchronous" (default) or "synchronous"
+#' @param returnDataFrame if TRUE returns a dataframe where the rownames correspond to the states and columns correspond to the attractor basin size of the perturbed network, if FALSE returns a list of BoolNet attractors
+#' @return dataframe or list of attractors of the perturbed networks
+#' @seealso \code{\link{fixGenes}} 
+#' @export
+#' @examples
+#' # All single gene knock-out and over-expression of a network
+#' perturbNetworkFixedNodes(net)
+#' 
+#' # Cellcycle network CycD over-expression
+#' perturbNetworkFixedNodes( cellcycle, list("CycD"), list(1) )
+#' 
+#' # Cellcycle network CycDknock-out with Rb over-expression
+#' perturbNetworkFixedNodes(  cellcycle, list(c("CycD", "Rb")), list(c(0,1)) , list("CycD-RB+") )
+#' 
+#' # All CycD double gene knock-outs
+#' double.KO <- lapply(cellcycle$genes[-1], function(gene) c("CycD", gene))
+#' number.double.KO <- length(double.KO)
+#' perturbNetworkFixedNodes(  net=cellcycle, genes=double.KO, 
+#'                         value=as.list(rep(0, number.double.KO))  ) 
 perturbNetworkFixedNodes <- function(net, genes, value, label, type="synchronous", returnDataFrame=TRUE) {
-    # Takes a net and fixes the genes with value, returns attractors
-    # net:      network
-    # genes:    list of genes to fix
-    # values:   list of values to fix genes
-    # label:    names of fixed networks
-    # type:     update type, if async the basins are T of F
-    # returnDataFrame: datatype to return, if true dataframe, if false list of attractors
-    
     # generate genes to evaluate
     if (missing(genes) | missing(value)) { #Default, evaluate all single KOver
         genes <- c(NA, net$genes, net$genes)
@@ -149,7 +255,7 @@ perturbNetworkFixedNodes <- function(net, genes, value, label, type="synchronous
     }
     names(mutants) <- label
     # convert attractors to dataframe
-    if (returnDataFrame==TRUE) mutants <- attractorsListsToDataframe(mutants)
+    if (returnDataFrame==TRUE) mutants <- attractorsLists2Dataframe(mutants)
     mutants
 }
 
@@ -158,7 +264,20 @@ perturbNetworkFixedNodes <- function(net, genes, value, label, type="synchronous
 ##########################
 ####   PERTURB PATH   ####
 ##########################
-perturbPathToAttractor <- function(state, net, genes, values, time=NULL, returnTable = FALSE) {
+
+#' Description
+#'
+#' @param state binary state to perturb
+#' @param net BoolNet network to perturb
+#' @param genes genes to perturb
+#' @param values value of perturbed genes
+#' @param time time of perturbation. If time=NULL the perturbation will be fixed permanently, if time=n the perturbation will last n time steps and then the rules will return to their original values.
+#' @param returnTrajectory if TRUE returns the trajectory of state perturbation, if FALSE returns the reached attractor. Default is FALSE
+#' @return If returnTrajectory=TRUE returns the trajectory of the state perturbation. If FALSE returns the attractor the state reached. Al the updates are synchronous.
+#' @seealso \code{\link{...}} 
+#' @export
+#' @examples
+perturbPathToAttractor <- function(state, net, genes, values, time=NULL, returnTrajectory = FALSE) {
     # Documentation
     # Takes an initial state and a perturbation, returns the final attractor or trajectory
     # Perturbations are nodes and values
@@ -166,7 +285,7 @@ perturbPathToAttractor <- function(state, net, genes, values, time=NULL, returnT
     
     initial.state <- state #add conversion later
     names(initial.state) <- net$genes
-    if (returnTable) path.perturbed <- list(initial.state) #save initial state in path
+    if (returnTrajectory) path.perturbed <- list(initial.state) #save initial state in path
     
     if (!is.null(time)) { # if transient perturbation
         # determine original value of inputs
@@ -181,7 +300,7 @@ perturbPathToAttractor <- function(state, net, genes, values, time=NULL, returnT
         initial.state <- setStateValues(state, genes, values)
         
         for (t in 1:time) { #iterate n times
-            if (returnTable) path.perturbed <- append(path.perturbed, list(initial.state))
+            if (returnTrajectory) path.perturbed <- append(path.perturbed, list(initial.state))
             initial.state <- stateTransition(net, initial.state)
         }
         # recover original network and inputs
@@ -192,10 +311,10 @@ perturbPathToAttractor <- function(state, net, genes, values, time=NULL, returnT
         net <- fixGenes(net, genes, values) 
         # change the values according to perturbation
         initial.state <- setStateValues(state, genes, values)
-        #if (returnTable) path.perturbed <- append(path.perturbed, list(initial.state))
+        #if (returnTrajectory) path.perturbed <- append(path.perturbed, list(initial.state))
     }
     
-    if (!returnTable) { #just return the attractor
+    if (!returnTrajectory) { #just return the attractor
         attr <- getAttractors(net, startStates = list(initial.state), returnTable=F)
         return(attr)
     }
