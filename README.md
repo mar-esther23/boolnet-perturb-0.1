@@ -32,25 +32,25 @@ For running the tutorials you need [Jupyter](http://jupyter.readthedocs.org/en/l
 
 ## Jupyter Tutorials
 
-* [Introduction](./RPRN-Introduction.ipynb)
+* [Introduction](./Jupyter_Tutorial/RPRN-Introduction.ipynb)
     * Robustness in biological systems
     * Boolean regulatory networks
     * Biological system: Th17/iTreg network
     * BoolNet and BoolNetPerturb installation
-* [BoolNet](./RPRN-BoolNet.ipynb)
+* [BoolNet](./Jupyter_Tutorial/RPRN-BoolNet.ipynb)
     * Construction
     * Attractors
-    * Labeling
-* [Functions](./RPRN-Functions.ipynb)
+    * Labels
+* [Functions](./Jupyter_Tutorial/RPRN-Functions.ipynb)
     * Over-expression and knock-outs
     * Fixed environments
     * Truth tables
-* [Updating](./RPRN-Updating.ipynb)
+* [Updating](./Jupyter_Tutorial/RPRN-Updating.ipynb)
     * Synchronous vs asynchronous
     * Transition table
-* [States and trajectories](./RPRN-States-Trajectories.ipynb)
+* [States and trajectories](./Jupyter_Tutorial/RPRN-States-Trajectories.ipynb)
     * Transient perturbations
     * Stochastic noise
-* [Appendix](./RPRN-Appendix.ipynb)
+* [Appendix](./Jupyter_Tutorial/RPRN-Appendix.ipynb)
     * Simulation and model checking
     * Importing and exporting with SBML-qual
