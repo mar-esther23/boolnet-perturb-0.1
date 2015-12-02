@@ -16,20 +16,14 @@ Download from github:
 
 2. Unzip the file
 
-3. In `R`:
-```
-install("path/to/BoolNetPerturb")
-```
+3. In `R`: `install("path/to/BoolNetPerturb")`
 
 
 The ugly option (not recommended):
 
 1. Download the [functions code](https://github.com/mar-esther23/boolnet-perturb/blob/master/BoolNetPerturb/R/BoolNetPerturb.R).
 
-2. In `R`:
-```
-source("path/to/BoolNetPerturb.R")
-```
+2. In `R`: `source("path/to/BoolNetPerturb.R")`
 
 
 
