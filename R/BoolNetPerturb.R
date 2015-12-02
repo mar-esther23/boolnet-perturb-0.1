@@ -1,8 +1,5 @@
-library(BoolNet)
-
-
 #' Convert integer to binary state vector with node names.
-#'
+#' '
 #' @param x input integer representing the state
 #' @param genes network node names
 #' @return Numeric binary vector of the same length as the nuber of nodes. Each 
@@ -21,7 +18,7 @@ dec2binState <- function(x, nodes){
 
 
 
-#' Determines if a node is an input in the network.
+#' Determine if a node is an input of the network.
 #'
 #' @param gene node to asses
 #' @param net BoolNet network 
@@ -39,7 +36,7 @@ isGeneInput <- function(gene, net) {
 
 
 
-#' Set a new value to certain nodes in a state.
+#' Modify state, set new value to target nodes.
 #'
 #' @param state original state
 #' @param new.nodes nodes to modify
@@ -60,10 +57,9 @@ setStateValues <- function(state, new.nodes, new.values) {
 #### DATAFRAMES ####
 ####################
 
-#' Convert an BoolNet attractor object to a data frame.
-#' Each property of attr$attractors corresponds to a dataframe column.
-#' If the propertie has elements with length > 1 it converts them to a string
-#' and joins them with sep.
+#' Convert attractor to data frame.
+#' 
+#' Convert an BoolNet attractor object to a data frame. Each property of attr$attractors corresponds to a dataframe column. If the propertie has elements with length > 1 it converts them to a string and joins them with sep.
 #'
 #' @param attr BoolNet attractor object
 #' @param sep string to join elements with length > 1, default "/"
@@ -96,10 +92,9 @@ attractor2dataframe <- function(attr, sep="/") {
 
 
 
-#' Convert a list of BoolNet attractor objects to a data frame.
-#' Each property of eacn attr$attractors corresponds to a dataframe column. Columns are named attrName.propertyName, if the list has no names numbers will be used.
-#' If the propertie has elements with length > 1 it converts them to a string
-#' and joins them with sep.
+#' Convert a list of attractors to a data frame.
+#' 
+#' Convert a list of BoolNet attractor objects to a data frame. Each property of eacn attr$attractors corresponds to a dataframe column. Columns are named attrName.propertyName, if the list has no names numbers will be used. If the propertie has elements with length > 1 it converts them to a string and joins them with sep.
 #'
 #' @param attr.list list of BoolNet attractor objects
 #' @param sep string to join elements with length > 1, default "/"
@@ -139,9 +134,10 @@ attractorsLists2Dataframe <- function(attr.list, sep='/') {
 ####   LABELING   ####
 ######################
 
+#' Label a state.
+#' 
 #' Labels a binary state using a set of labelling rules.
-#' The elements of the state correspond the network node names.
-#' If a rule is satisfied the corresponding label is appended.
+#' The elements of the state correspond the network node names. If a rule is satisfied the corresponding label is appended.
 #'
 #' @param state binary state to label
 #' @param node.names node names of the state, the length must be the same that the state's
@@ -170,7 +166,9 @@ labelState <- function(state, node.names, labels, rules, sep='') {
 
 
 
-#' Labels a BoolNet attractor object using a set of labelling rules, returns a list of labels.
+#' Label attractor.
+#' 
+#' Returns a list of labels for a the involved states in a BoolNet attractor object using a set of labelling rules, returns a list of labels.
 #'
 #' @param attr Boolnet attractor object
 #' @param node.names node names of the network
@@ -203,6 +201,9 @@ labelAttractors <- function(attr, node.names, labels, rules, sep='') {
 #############################
 ####   PERTURB NETWORK   ####
 #############################
+
+#' Perturb network functions.
+#' 
 #' Simulates fixed function perturbations (knock-out and over-expression) in a network. Takes a network, a list of gene names and corresponding values to perturb, fixes those values in each network and returns the corresponding attractors for all perturbed networks. By default it  returns all the single node knock-out and over-expression of a network.
 #'
 #' @param net network to perturb
@@ -265,7 +266,9 @@ perturbNetworkFixedNodes <- function(net, genes, value, label, type="synchronous
 ####   PERTURB PATH   ####
 ##########################
 
-#' Description
+#' Perturb network state or trajectory.
+#' 
+#' Modifies the values of a state and returns the resulting attractor or trajectory. If time=NULL the perturbation will be fixed permanently, if time=n the perturbation will last n time steps and then the rules will return to their original values.
 #'
 #' @param state binary state to perturb
 #' @param net BoolNet network to perturb
@@ -277,12 +280,8 @@ perturbNetworkFixedNodes <- function(net, genes, value, label, type="synchronous
 #' @seealso \code{\link{...}} 
 #' @export
 #' @examples
-perturbPathToAttractor <- function(state, net, genes, values, time=NULL, returnTrajectory = FALSE) {
-    # Documentation
-    # Takes an initial state and a perturbation, returns the final attractor or trajectory
-    # Perturbations are nodes and values
-    # Perturbations can be fixed or for a certain time
-    
+#' TODO
+perturbPathToAttractor <- function(state, net, genes, values, time=NULL, returnTrajectory = FALSE) {    
     initial.state <- state #add conversion later
     names(initial.state) <- net$genes
     if (returnTrajectory) path.perturbed <- list(initial.state) #save initial state in path
@@ -292,6 +291,9 @@ perturbPathToAttractor <- function(state, net, genes, values, time=NULL, returnT
         inputs <- unlist(sapply(net$genes, function(g) {
             if (isGeneInput(g,net)) return(T) else F
         }))
+        # We need to save the inputs, because the default input function is input=input
+        # So if we don't explicitly return them to the original value 
+        # they will stay in the modified value !
         inputs.values <- state[inputs]
         inputs <- names(inputs.values)
         
@@ -331,7 +333,3 @@ perturbPathToAttractor <- function(state, net, genes, values, time=NULL, returnT
     rownames(path.res) <- c(1:(dim(path.res)[1]))
     return(path.res)
 }
-
-
-
-

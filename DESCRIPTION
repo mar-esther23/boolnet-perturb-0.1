@@ -1,15 +1,19 @@
-Package: BoolNetPerturn
-Title: Perturb Boolean Functions
+Package: BoolNetPerturb
+Title: Perturb Boolean Networks
 Version: 0.1
-Authors@R: person("ME", "Martinez-Sanches", email = "mar.esther23@gmail.com",
+Authors@R: person("ME", "Martinez-Sanchez", email = "mar.esther23@gmail.com",
                   role = c("aut", "cre"))
-Description: The BoolNetPerturb package adds functions to BoolNet for 
-    perturbing Boolean Networks. This functions can be used for the study of 
-    biological systems. This package is capable of labeling states, simulating 
-    multiple knock-outs and over-expressions and simulating fixed and transient 
-    perturbations in the states and trajectory of a network.
-Depends: R (>= 3.1.0), BoolNet (>= 2.1.1)
+Description: The BoolNetPerturb package adds functions to BoolNet for
+    perturbing Boolean Regulatory Networks. This functions can be used
+    for the study of biological systems. This package is capable of
+    labeling states, simulating multiple knock-outs and over-expressions
+    and simulating fixed and transient perturbations in the states and
+    trajectory of a network. See the Jupyter Tutorials for more examples.
+Depends:
+    R (>= 3.1.0),
+    BoolNet (>= 2.1.1)
 License: MIT
 LazyData: true
 Imports:
     BoolNet (>= 2.1.1),
+RoxygenNote: 5.0.1.9000
