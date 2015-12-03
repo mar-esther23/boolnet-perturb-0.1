@@ -56,11 +56,12 @@ For running the tutorials you need [Jupyter](http://jupyter.readthedocs.org/en/l
     * Importing and exporting with SBML-qual
 
 --------------------------------------------
-
+<div class="right">
 Do I dare
 
 Disturb the universe?
 
 In a minute there is time
+</div>
 
 For decisions and revisions which a minute will reverse.
