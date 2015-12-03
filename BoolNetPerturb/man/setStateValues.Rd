@@ -20,7 +20,7 @@ State with new values in modified nodes.
 Modify state, set new value to target nodes.
 }
 \examples{
-state <- dec2binState(0, cellcycle$genes)
+state <- int2binState(0, cellcycle$genes)
 new.state <- setStateValues(state, c("cycd","cyce"), c(0,1))
 }
 

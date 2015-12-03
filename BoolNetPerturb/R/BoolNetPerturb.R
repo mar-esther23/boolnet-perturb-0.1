@@ -9,8 +9,8 @@
 #' @seealso \code{\link{intToBits}} which this function wraps
 #' @export
 #' @examples
-#' dec2binState(0, net$genes)
-dec2binState <- function(x, nodes){ 
+#' int2binState(0, net$genes)
+int2binState <- function(x, nodes){ 
     state <- as.integer( intToBits(x)[1:length(nodes)] )  
     names(state) <- nodes
     state
@@ -44,7 +44,7 @@ isGeneInput <- function(gene, net) {
 #' @return State with new values in modified nodes.
 #' @export
 #' @examples
-#' state <- dec2binState(0, cellcycle$genes)
+#' state <- int2binState(0, cellcycle$genes)
 #' new.state <- setStateValues(state, c("cycd","cyce"), c(0,1))
 setStateValues <- function(state, new.nodes, new.values) {
     for (i in 1:length(new.nodes)) { state[new.nodes[i]] <- new.values[i] }
@@ -147,7 +147,7 @@ attractorsLists2Dataframe <- function(attr.list, sep='/') {
 #' @return String corresponding to the label of the state.
 #' @export
 #' @examples
-#' state <- dec2binState(0, net$genes)
+#' state <- int2binState(0, net$genes)
 #' labelState(state, net$genes, labels, rules, sep='')
 labelState <- function(state, node.names, labels, rules, sep='') {
     names(state) <- node.names
@@ -188,7 +188,7 @@ labelAttractors <- function(attr, node.names, labels, rules, sep='') {
     res <- list()
     for (i in 1:length(attr$attractors)) {
         label <- sapply(attr$attractors[[i]]$involvedStates, function(state) {
-            state <- dec2binState(state, node.names) #state to binary
+            state <- int2binState(state, node.names) #state to binary
             l <- labelState(state, node.names, labels, rules, sep='') #label
         })
         res <- append(res, list(label))
@@ -280,7 +280,30 @@ perturbNetworkFixedNodes <- function(net, genes, value, label, type="synchronous
 #' @seealso \code{\link{...}} 
 #' @export
 #' @examples
-#' TODO
+#' # Perturb an state by permanetly fixing the value of nodes, return the final attractor
+#' state <- int2binState(162, cellcycle$genes)
+#' new.attr <- perturbPathToAttractor(state, cellcycle, 
+#'                  c('CycD', 'Rb'), c(1,0))
+#' 
+#' 
+#' # Perturb an state by permanetly fixing the value of nodes, return the trajectory
+#' state <- int2binState(162, cellcycle$genes)
+#' new.traj <- perturbPathToAttractor(state, cellcycle, 
+#'                  c('CycD', 'Rb'), c(1,0), 
+#'                  returnTrajectory=TRUE)
+#' 
+#' # Perturb an state by fixing the value of nodes for one time step, return the final attractor
+#' state <- int2binState(162, cellcycle$genes)
+#' new.attr <- perturbPathToAttractor(state, cellcycle, 
+#'                  c('CycD', 'Rb'), c(1,0), time=1)
+#' 
+#' 
+#' # Perturb an state by fixing the value of nodes one time step, return the trajectory
+#' state <- int2binState(162, cellcycle$genes)
+#' new.traj <- perturbPathToAttractor(state, cellcycle, 
+#'                  c('CycD', 'Rb'), c(1,0), time=1, 
+#'                  returnTrajectory=TRUE)
+#' 
 perturbPathToAttractor <- function(state, net, genes, values, time=NULL, returnTrajectory = FALSE) {    
     initial.state <- state #add conversion later
     names(initial.state) <- net$genes

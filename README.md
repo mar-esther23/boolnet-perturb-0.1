@@ -54,3 +54,13 @@ For running the tutorials you need [Jupyter](http://jupyter.readthedocs.org/en/l
 * [Appendix](./Jupyter_Tutorial/RPRN-Appendix.ipynb)
     * Simulation and model checking
     * Importing and exporting with SBML-qual
+
+--------------------------------------------
+
+Do I dare
+
+Disturb the universe?
+
+In a minute there is time
+
+For decisions and revisions which a minute will reverse.

@@ -27,7 +27,30 @@ If returnTrajectory=TRUE returns the trajectory of the state perturbation. If FA
 Modifies the values of a state and returns the resulting attractor or trajectory. If time=NULL the perturbation will be fixed permanently, if time=n the perturbation will last n time steps and then the rules will return to their original values.
 }
 \examples{
-TODO
+# Perturb an state by permanetly fixing the value of nodes, return the final attractor
+state <- int2binState(162, cellcycle$genes)
+new.attr <- perturbPathToAttractor(state, cellcycle, 
+                 c('CycD', 'Rb'), c(1,0))
+
+
+# Perturb an state by permanetly fixing the value of nodes, return the trajectory
+state <- int2binState(162, cellcycle$genes)
+new.traj <- perturbPathToAttractor(state, cellcycle, 
+                 c('CycD', 'Rb'), c(1,0), 
+                 returnTrajectory=TRUE)
+
+# Perturb an state by fixing the value of nodes for one time step, return the final attractor
+state <- int2binState(162, cellcycle$genes)
+new.attr <- perturbPathToAttractor(state, cellcycle, 
+                 c('CycD', 'Rb'), c(1,0), time=1)
+
+
+# Perturb an state by fixing the value of nodes one time step, return the trajectory
+state <- int2binState(162, cellcycle$genes)
+new.traj <- perturbPathToAttractor(state, cellcycle, 
+                 c('CycD', 'Rb'), c(1,0), time=1, 
+                 returnTrajectory=TRUE)
+
 }
 \seealso{
 \code{\link{...}}

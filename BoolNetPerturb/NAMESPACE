@@ -2,7 +2,7 @@
 
 export(attractor2dataframe)
 export(attractorsLists2Dataframe)
-export(dec2binState)
+export(int2binState)
 export(isGeneInput)
 export(labelAttractors)
 export(labelState)

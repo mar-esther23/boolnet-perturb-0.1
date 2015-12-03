@@ -25,7 +25,7 @@ Labels a binary state using a set of labelling rules.
 The elements of the state correspond the network node names. If a rule is satisfied the corresponding label is appended.
 }
 \examples{
-state <- dec2binState(0, net$genes)
+state <- int2binState(0, net$genes)
 labelState(state, net$genes, labels, rules, sep='')
 }
 
