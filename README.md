@@ -56,10 +56,9 @@ For running the tutorials you need [Jupyter](http://jupyter.readthedocs.org/en/l
     * Importing and exporting with SBML-qual
 
 --------------------------------------------
-Do I dare
 
-Disturb the universe?
-
-In a minute there is time
-
-For decisions and revisions which a minute will reverse.
+<p align="right"> Do I dare </p>
+<p align="right"> disturb the universe? </p>
+<p align="right"> In a minute there is time </p>
+<p align="right"> for decisions and revisions </p>
+<p align="right"> which a minute will reverse. </p>
