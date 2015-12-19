@@ -36,8 +36,8 @@ For running the tutorials you need [Jupyter](http://jupyter.readthedocs.org/en/l
     * Robustness in biological systems
     * Boolean regulatory networks
     * Biological system: Th17/iTreg network
-    * BoolNet and BoolNetPerturb installation
 * [BoolNet](./Jupyter_Tutorial/RPRN-BoolNet.ipynb)
+    * Installation
     * Construction
     * Attractors
     * Labels
