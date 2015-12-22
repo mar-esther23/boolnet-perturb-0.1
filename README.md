@@ -16,7 +16,9 @@ Download from github:
 
 2. Unzip the file
 
-3. In `R`: `install("path/to/BoolNetPerturb")`
+3. In `terminal`: `R CMD INSTALL boolnet-perturb-master.zip`
+
+4. Or in `R`: `install.packages(<path/to/boolnet-perturb>, repos = NULL, type="source")`
 
 
 The ugly option (not recommended):
