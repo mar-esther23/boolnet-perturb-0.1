@@ -1,8 +1,8 @@
 #' Convert integer to binary state vector with node names.
 #' '
 #' @param x input integer representing the state
-#' @param genes network node names
-#' @return Numeric binary vector of the same length as the nuber of nodes. Each 
+#' @param node.names network node names
+#' @return Numeric binary vector of the same length as the number of nodes. Each 
 #'     position corresponds to a node of the network. The values of each element 
 #'     are 0 or 1. The name of each element corresponds to the name of the node in
 #'     that position in the network.
@@ -10,9 +10,9 @@
 #' @export
 #' @examples
 #' int2binState(0, net$genes)
-int2binState <- function(x, nodes){ 
-    state <- as.integer( intToBits(x)[1:length(nodes)] )  
-    names(state) <- nodes
+int2binState <- function(x, node.names){ 
+    state <- as.integer( intToBits(x)[1:length(node.names)] )  
+    names(state) <- node.names
     state
 }
 
@@ -59,7 +59,7 @@ setStateValues <- function(state, new.nodes, new.values) {
 
 #' Convert attractor to data frame.
 #' 
-#' Convert an BoolNet attractor object to a data frame. Each property of attr$attractors corresponds to a dataframe column. If the propertie has elements with length > 1 it converts them to a string and joins them with sep.
+#' Convert a BoolNet attractor object to a data frame. Each property of attr$attractors corresponds to a dataframe column. If the property has elements with length > 1 it converts them to a string and joins them with sep.
 #'
 #' @param attr BoolNet attractor object
 #' @param sep string to join elements with length > 1, default "/"
@@ -94,7 +94,7 @@ attractor2dataframe <- function(attr, sep="/") {
 
 #' Convert a list of attractors to a data frame.
 #' 
-#' Convert a list of BoolNet attractor objects to a data frame. Each property of eacn attr$attractors corresponds to a dataframe column. Columns are named attrName.propertyName, if the list has no names numbers will be used. If the propertie has elements with length > 1 it converts them to a string and joins them with sep.
+#' Convert a list of BoolNet attractor objects to a data frame. Each property of eacn attr$attractors corresponds to a dataframe column. Columns are named attrName.propertyName, if the list has no names numbers will be used. If the property has elements with length > 1 it converts them to a string and joins them with sep.
 #'
 #' @param attr.list list of BoolNet attractor objects
 #' @param sep string to join elements with length > 1, default "/"
@@ -210,7 +210,7 @@ labelAttractors <- function(attr, node.names, labels, rules, sep='') {
 #' @param genes list of gene names to perturb. To perturb multiple nodes at the same time use a vector inside the list.
 #' @param value list of values of the perturbed genes. Knock-out is 0, over-expression is 1.
 #' @param label name of the perturbation
-#' @param type update type, can be "synchronous" (default) or "synchronous"
+#' @param type update type, can be "synchronous" (default) or "asynchronous"
 #' @param returnDataFrame if TRUE returns a dataframe where the rownames correspond to the states and columns correspond to the attractor basin size of the perturbed network, if FALSE returns a list of BoolNet attractors
 #' @return dataframe or list of attractors of the perturbed networks
 #' @seealso \code{\link{fixGenes}} 
