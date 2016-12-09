@@ -356,3 +356,167 @@ perturbPathToAttractor <- function(state, net, genes, values, time=NULL, returnT
     rownames(path.res) <- c(1:(dim(path.res)[1]))
     return(path.res)
 }
+
+
+
+#################################
+####   POPULATION ANALYSIS   ####
+#################################
+
+#' Analyze and graph the average of multiple asynchronous simulations for an specific number of time steps
+#' 
+#' @param net Boolnet network
+#' @param tStates number of time steps running each simulation, default value set to 1000
+#' @param simulations number of simulations equivalent to population size, default value set to 1000
+#' @param new.nodes nodes to set with an specific value at the initial state
+#' @param new.values values for nodes in new.nodes
+#' @param gene gene to perturb, default value set NULL
+#' @param time time of perturbation. Default value set to 1, if time=n the perturbation will last n time steps and then the rules will return to their original values.
+#' @param value value of perturbed gene, default value set to 1
+#' @param pertTime period at which the gene will be perturbed, default value set to 700
+#' @param StatDS period at wich a standard deviation wil be calculated
+#' @return Data frame with the average of the simulations for each node in each time step
+#' @export
+#' @examples analyzeTSwithINT(net, 2000, 50000, SN, FN, 'VCAM1_M', 1, 0, timeS)
+
+popSimulation <- function(net, tStates=1000, simulations=1000, new.nodes=list(), new.values=list(), gene=NULL, time = 1, value = 1, pertTime=700, StatDS = NA) {
+  nodesNames <- net$genes
+  noNodes <- length(nodesNames)
+  if(is.na(match(gene,nodesNames))==TRUE){
+    stop('Gene name do not match with any gene in network')
+  }
+  for(pT in 1:length(pertTime)){
+    if(time >= pertTime[pT]){
+      stop('Gene perturbation time must be smaller than pertTime')
+    }
+  }
+  for(fn in new.nodes){
+    if(is.na(match(fn,nodesNames))==TRUE){
+    stop('Node in new.nodes do not match with any gene in network')
+    }
+  }
+  pulse <- c()
+  for(pT in 1:length(pertTime)){
+    for(b in 0:time){
+      pulse <- c(pulse, ((pertTime[pT])+b))
+    }
+  }
+  statEv=c()
+  if((TRUE%in%is.na(StatDS))==FALSE){
+    if(length(StatDS)==1){
+      stat <- c(1:floor(tStates/StatDS))
+      statEv <- c()
+      for(c in stat){
+        statEv <- c(statEv, ((StatDS*c)+1))
+      }
+    }
+    if(length(StatDS)>1){
+      statEv=StatDS+1
+      if(is.na(match('TRUE', statEv>tStates))==FALSE){
+        statEv=statEv[1:(match('TRUE', statEv>tStates))]
+      }
+    }
+    tempStat <- matrix(0, nrow=simulations*length(statEv), ncol=1+noNodes)
+    tempStat2 <- matrix(0, nrow=length(statEv), ncol=noNodes)
+    rownames(tempStat2) <- statEv-1
+    colnames(tempStat2) <- nodesNames
+    tempRow = 1
+  }
+  itP = 0
+  s <- match(gene, nodesNames) #aquire the index of the node for stimulation
+  final <- matrix(0, nrow=tStates+1, ncol=noNodes) #create an empty matrix for the output
+  Porct1 = 0 #counter for the printing of perecentage of progress
+  cat('START ')
+  for(i in 1:simulations) {
+    if(length(new.nodes) != 0){ #Change the initial random state keeping the new.nodes with their associated values
+      x <- sample(0:1, noNodes, replace=T)
+      x[match(new.nodes,nodesNames)] <- new.values
+    }
+    else{
+      x <- sample(0:1, noNodes, replace=T)
+    }
+    finalTemp <- matrix(0, nrow=tStates+1, ncol=noNodes) #Temporal matrix to obtain the average activation values
+    finalTemp[1,] <- x
+    for(j in 2:(tStates+1)) {
+      if(TRUE%in%(j==pulse)){
+          x[s] <- value
+      }
+      x <- as.vector(stateTransition(net, state = x, type = 'asynchronous')) ###
+      finalTemp[j,] <- x
+      if(TRUE%in%(j==statEv)){
+        tempStat[tempRow,1] <- (j-1)
+        tempStat[tempRow,2:ncol(tempStat)] <- x
+        tempRow=tempRow+1
+      }
+    }
+    final = final + finalTemp
+    itP = itP + 1
+    Porct2 = round((itP/simulations)*100)
+    if (Porct2 != Porct1) {
+      cat('... ')
+      cat(Porct2)
+    }
+    Porct1 = Porct2
+  }
+  finalGraph = final/itP
+  rownames(finalGraph) <- c(0:tStates)
+  colnames(finalGraph) <- nodesNames
+  finalStat <- matrix()
+  if((TRUE%in%is.na(StatDS))==FALSE){
+    finalStat <- matrix(NA, nrow = nrow(finalGraph), ncol = (finalGraph))
+    for(k in 1:length(statEv)){
+      for(d in 1:noNodes){
+        tempSum = 0
+        tempAv <- finalGraph[(statEv[k]),d]
+        for(m in 0:(simulations-1)){
+          n=k+(length(statEv)*m)
+          tempSum = tempSum+(((tempStat[n,d+1])-tempAv)^2)
+        }
+        tempStat2[k,d] <- sqrt(tempSum/(simulations-1))
+      }
+    }
+    finalStat <- matrix(NA, nrow = nrow(finalGraph), ncol = ncol(finalGraph))
+    rownames(finalStat) <- rownames(finalGraph)
+    colnames(finalStat) <- colnames(finalGraph)
+    for(e in 1:nrow(tempStat2)){
+      finalStat[rownames(tempStat2)[e],] <- tempStat2[e,]
+    }
+  }
+  cat(' END')
+  listReturn <- list('totalData'=round(finalGraph,5), 'statistics'=round(finalStat,5))
+  return(listReturn)
+}
+
+##############################################################################################
+graphNodes_popSimulation <- function(net, genes, AnalyzeNetTable){
+  print('This function requires ggplot2 and reshape2 packages')
+  for(g in 1:length(genes)){
+    if(is.na(match(genes[g],net$genes))==TRUE){
+      stop('Gene name do not match with any gene in network')
+    }
+  }
+  for(a in 1:length(genes)){
+    b <- match(genes, colnames(AnalyzeNetTable))
+    TimeSteps <- as.numeric(rownames(AnalyzeNetTable))
+    dF <- data.frame(TimeSteps,AnalyzeNetTable[,b])
+    dF2 <- melt(data = dF, id.vars = "TimeSteps")
+    plot <- ggplot(data = dF2, aes(x = TimeSteps, y = value, colour = variable)) + geom_line() + ggtitle(paste(genes, collapse = ", ")) + ylab("Average activation value")
+    return(plot)
+  }
+}
+
+singleGraphNodes_popSimulation <- function(net, genes, AnalyzeNetTable){
+  for(g in 1:length(genes)){
+    if(is.na(match(genes[g],net$genes))==TRUE){
+      stop('Gene name do not match with any gene in network')
+    }
+  }
+  for(a in 1:length(genes)){
+    b <- match(genes, colnames(AnalyzeNetTable))
+    b <- match(genes[a], colnames(AnalyzeNetTable))
+    y <- AnalyzeNetTable[,b] ; x <- c(1:length(y)) # data
+    heading = paste(genes[a])
+    plot(x, y, type="l", main=heading)
+    lines(x, y, type="l")
+  }
+}
